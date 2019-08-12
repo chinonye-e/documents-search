@@ -18,7 +18,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 /**
- * Reads the indexed files and performs search
+ * Reads the indexed files and returns search result.
  * @see <a href= "https://howtodoinjava.com/lucene/lucene-index-and-search-text-files/#demo">https://howtodoinjava.com/lucene/lucene-index-and-search-text-files/#demo</a>
  * @author CE017795
  *
@@ -36,7 +36,6 @@ public class LuceneReadIndexFromFile {
         //Let's print out the path of files which have searched term
         for (ScoreDoc sd : foundDocs.scoreDocs) {
             Document d = searcher.doc(sd.doc);
-//            System.out.println("Path : "+ d.get("path") + ", Score : " + sd.score);
             final String documentPath = d.get("path");
             final int index = documentPath.lastIndexOf('\\');
             final String fileName = documentPath.substring(index + 1);
