@@ -25,13 +25,14 @@ import util.LuceneWriteIndexFromFile;
  * @author CE017795
  *
  */
-public class SearchDocument {
+public class DocumentSearch {
 
     private static final Random RAND = new Random();
     private static final String TEXTS_DIRECTORY = "./src/main/resources/sampleTexts/";
     private static final String INDEX_DIRECTORY = "./src/main/resources/indexedFiles/";
     
     public static void main(String [] args) throws Exception {
+        DocumentSearch docSearch = new DocumentSearch();
         Scanner scanner = new Scanner(System.in);
         
         try {
@@ -42,7 +43,7 @@ public class SearchDocument {
             String searchTerm = scanner.nextLine();  // Read the search term/phrase
             
             if (!(searchTerm.equalsIgnoreCase(exitSignal))) {
-                SearchDocument docSearch = new SearchDocument();
+                
                 documentsByName = docSearch.readFileAsString();
             }
             
@@ -65,7 +66,7 @@ public class SearchDocument {
                 if (searchMethod.equalsIgnoreCase(exitSignal))
                     break;
                 
-                searchDocument(searchTerm, searchMethod, documentsByName);
+                docSearch.searchDocument(searchTerm, searchMethod, documentsByName);
                 
                 // then loop until exit
                 System.out.println("Enter a search term or type end to exit the program: ");
@@ -74,7 +75,7 @@ public class SearchDocument {
             
             System.out.println("Would you like to run the perfrmance test that performs two million searches? Yes or No");
             if (scanner.nextLine().equalsIgnoreCase("yes")) {
-                performanceSearch(documentsByName);
+                docSearch.performanceSearch(documentsByName);
             }
             
         } catch (Exception e) {
@@ -92,7 +93,7 @@ public class SearchDocument {
      * @return the map of the number of times the search term was found, mapped by the document name, and sorted from most relevant to least relevant document
      * @throws Exception 
      */
-    public static Map<String, Integer> searchDocument(final String searchTerm, final String searchMethod, final Map<String, String> documentsByName) throws Exception {
+    public Map<String, Integer> searchDocument(final String searchTerm, final String searchMethod, final Map<String, String> documentsByName) throws Exception {
         Map<String, Integer> result = null;
         if (!(searchMethod.equals("1") || searchMethod.equals("2") || searchMethod.equals("3"))) {
             System.out.println("Invalid method selection.");
@@ -142,8 +143,8 @@ public class SearchDocument {
         return sortedResult;
     }
     
-    private static void performanceSearch(final Map<String, String> documentsByName) throws Exception {
-        SearchDocument docSearch = new SearchDocument();
+    private void performanceSearch(final Map<String, String> documentsByName) throws Exception {
+        DocumentSearch docSearch = new DocumentSearch();
         docSearch.readFileAsString();
         
         long startTime = 0, endTime = 0, timeElapsed = 0;
@@ -179,7 +180,7 @@ public class SearchDocument {
      * Generates a random string of random lengths from the letters of the alphabets
      * @return the generated string
      */
-    private static String generateRandomString() {
+    private String generateRandomString() {
         int count = RAND.nextInt(7) + 2;
         final String alphabets = "abcdefghijklmnopqrstuvwxyz";
         final StringBuilder builder = new StringBuilder();
@@ -195,7 +196,7 @@ public class SearchDocument {
      * @param documentsByName documents keyed by name
      * @throws Exception
      */
-    private static Map<String, Integer> stringMatch(final String searchTerm, final Map<String, String> documentsByName) {
+    private Map<String, Integer> stringMatch(final String searchTerm, final Map<String, String> documentsByName) {
         final Map<String, Integer> result = new HashMap<>();
         
         for (final Entry<String, String> entry : documentsByName.entrySet()) {
@@ -230,7 +231,7 @@ public class SearchDocument {
      * @param documentsByName documents keyed by name
      * @throws Exception
      */
-    private static Map<String, Integer> regexMatch(final String searchTerm, final Map<String, String> documentsByName) {
+    private Map<String, Integer> regexMatch(final String searchTerm, final Map<String, String> documentsByName) {
         final String regex = Pattern.quote(searchTerm); // build a regex from the given search term
         final Map<String, Integer> result = new HashMap<>();
         
@@ -256,7 +257,7 @@ public class SearchDocument {
      * @return
      * @throws Exception
      */
-    private static Map<String, Integer> indexMatch(final String searchTerm, final Map<String, String> documentsByName) throws Exception {
+    private Map<String, Integer> indexMatch(final String searchTerm, final Map<String, String> documentsByName) throws Exception {
         LuceneReadIndexFromFile readIndex = new LuceneReadIndexFromFile();
         final Map<String, Integer> result = readIndex.searchIndex(searchTerm, INDEX_DIRECTORY);
         for (Entry<String, String> entry : documentsByName.entrySet()) {
@@ -266,7 +267,7 @@ public class SearchDocument {
         return result;
     }
 
-    private Map<String, String> readFileAsString()throws Exception {
+    Map<String, String> readFileAsString()throws Exception {
         final List<String> documentNames = new ArrayList<>();
         final Map<String, String> documentsByName = new HashMap<>();
         
