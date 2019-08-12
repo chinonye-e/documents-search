@@ -195,7 +195,7 @@ public class SearchDocument {
             }
             
             for(int i = 0; i < documentLength; i++) {
-                if(document.charAt(i) == searchTerm.charAt(j))
+                if(Character.toLowerCase(document.charAt(i)) == Character.toLowerCase(searchTerm.charAt(j)))
                     j++;
                 else
                     j = 0;
