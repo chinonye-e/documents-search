@@ -37,27 +37,31 @@ public class DocumentSearch {
         
         try {
             Map<String, String> documentsByName = new HashMap<>();
-            final String exitSignal = "end";
+            final String exitSignal = "<exit search>";
             
-            System.out.println("Enter a search term: ");
+            System.out.println("Enter a search term or type <exit search> to exit the program: ");
             String searchTerm = scanner.nextLine();  // Read the search term/phrase
             
-            if (!(searchTerm.equalsIgnoreCase(exitSignal))) {
-                
-                documentsByName = docSearch.readFileAsString();
+            if (searchTerm.equalsIgnoreCase(exitSignal)) {
+                System.out.println("Would you like to run the performance test that executes two million searches? Yes or No");
+                if (scanner.nextLine().equalsIgnoreCase("yes")) 
+                    docSearch.performanceSearch(documentsByName);
+                else
+                    return;
             }
             
+            documentsByName = docSearch.readFileAsString();
             // pre-process the documents and index them
             (new LuceneWriteIndexFromFile()).createIndex(TEXTS_DIRECTORY, INDEX_DIRECTORY);
             
             while (!(searchTerm.equalsIgnoreCase(exitSignal))) {
                 
-                System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed (does not return matches in documents but returns the order of relevance based on index): ");
+                System.out.println("Select a search method, enter 1 for String Match, 2 for Regular Expression, and 3 for Indexed (does not return matches in documents but returns the order of relevance based on index): ");
                 String searchMethod = scanner.nextLine();  // Read the preferred search method
                 
                 while (!(searchMethod.equals("1") || searchMethod.equals("2") || searchMethod.equals("3")) && !(searchMethod.equalsIgnoreCase(exitSignal))) {
                     System.out.println("Invalid method selection.");
-                    System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed (does not return matches in documents but returns the order of relevance based on index): ");
+                    System.out.println("Select a search method, enter 1 for String Match, 2 for Regular Expression, and 3 for Indexed (does not return matches in documents but returns the order of relevance based on index): ");
                     scanner.close();
                     scanner = new Scanner(System.in);
                     searchMethod = scanner.nextLine();
@@ -69,11 +73,11 @@ public class DocumentSearch {
                 docSearch.searchDocument(searchTerm, searchMethod, documentsByName);
                 
                 // then loop until exit
-                System.out.println("Enter a search term or type end to exit the program: ");
+                System.out.println("Enter a search term or type <exit search> to exit the program: ");
                 searchTerm = scanner.nextLine();  // Read the search term/phrase
             }
             
-            System.out.println("Would you like to run the perfrmance test that performs two million searches? Yes or No");
+            System.out.println("Would you like to run the performance test that executes two million searches? Yes or No");
             if (scanner.nextLine().equalsIgnoreCase("yes")) {
                 docSearch.performanceSearch(documentsByName);
             }
@@ -144,12 +148,10 @@ public class DocumentSearch {
     }
     
     private void performanceSearch(final Map<String, String> documentsByName) throws Exception {
-        DocumentSearch docSearch = new DocumentSearch();
-        docSearch.readFileAsString();
-        
+        final int iterations = 2000000;
         long startTime = 0, endTime = 0, timeElapsed = 0;
         startTime = System.nanoTime();
-        for (int i = 0; i < 2000000; i++) {
+        for (int i = 0; i < iterations; i++) {
             final String searchTerm = generateRandomString();
             stringMatch(searchTerm, documentsByName);
         }
@@ -157,23 +159,23 @@ public class DocumentSearch {
         timeElapsed = endTime - startTime;
         System.out.println("Simple Search took: " + timeElapsed / 1000000 + " ms");
         
-//        startTime = System.nanoTime();
-//        for (int i = 0; i < 2000000; i++) {
-//            final String searchTerm = generateRandomString();
-//            result = regexMatch(searchTerm);
-//        }
-//        endTime = System.nanoTime();
-//        timeElapsed = endTime - startTime;
-//        System.out.println("Regex Search took: " + timeElapsed / 1000000 + " ms");
+        startTime = System.nanoTime();
+        for (int i = 0; i < iterations; i++) {
+            final String searchTerm = generateRandomString();
+            regexMatch(searchTerm, documentsByName);
+        }
+        endTime = System.nanoTime();
+        timeElapsed = endTime - startTime;
+        System.out.println("Regex Search took: " + timeElapsed / 1000000 + " ms");
         
-//        startTime = System.nanoTime();
-//        for (int i = 0; i < 2000000; i++) {
-//            final String searchTerm = generateRandomString();
-//            result = indexMatch(searchTerm);
-//        }
-//        endTime = System.nanoTime();
-//        timeElapsed = endTime - startTime;
-//        System.out.println("Indexed Search took: " + timeElapsed / 1000000 + " ms");
+        startTime = System.nanoTime();
+        for (int i = 0; i < iterations; i++) {
+            final String searchTerm = generateRandomString();
+            indexMatch(searchTerm, documentsByName);
+        }
+        endTime = System.nanoTime();
+        timeElapsed = endTime - startTime;
+        System.out.println("Indexed Search took: " + timeElapsed / 1000000 + " ms");
     }
     
     /**
