@@ -46,14 +46,17 @@ public class SearchDocument {
                 documentsByName = docSearch.readFileAsString();
             }
             
+            // pre-process the documents and index them
+            (new LuceneWriteIndexFromFile()).createIndex(TEXTS_DIRECTORY, INDEX_DIRECTORY);
+            
             while (!(searchTerm.equalsIgnoreCase(exitSignal))) {
                 
-                System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed: ");
+                System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed (does not return matches in documents but returns the order of relevance based on index): ");
                 String searchMethod = scanner.nextLine();  // Read the preferred search method
                 
                 while (!(searchMethod.equals("1") || searchMethod.equals("2") || searchMethod.equals("3")) && !(searchMethod.equalsIgnoreCase(exitSignal))) {
                     System.out.println("Invalid method selection.");
-                    System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed: ");
+                    System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed (does not return matches in documents but returns the order of relevance based on index): ");
                     scanner.close();
                     scanner = new Scanner(System.in);
                     searchMethod = scanner.nextLine();
@@ -93,7 +96,7 @@ public class SearchDocument {
         Map<String, Integer> result = null;
         if (!(searchMethod.equals("1") || searchMethod.equals("2") || searchMethod.equals("3"))) {
             System.out.println("Invalid method selection.");
-            System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed: ");
+            System.out.println("Select a search method, enter 1 for String Match, enter 2 for Regular Expression, and 3 for Indexed (does not return matches in documents but returns the order of relevance based on index): ");
             return result;
         }
         
@@ -130,7 +133,10 @@ public class SearchDocument {
         
         System.out.println("Search results:");
         for (Entry<String, Integer> entry : sortedResult.entrySet()) {
-            System.out.println("\t" + entry.getKey() + " - " + entry.getValue() + " matches");
+            if (searchMethod.equals("3"))
+                System.out.println("\t" + entry.getKey());
+            else
+                System.out.println("\t" + entry.getKey() + " - " + entry.getValue() + " matches");
         }
         System.out.println("Elapsed time: " + timeElapsed / 1000000 + " ms");
         return sortedResult;
@@ -142,7 +148,7 @@ public class SearchDocument {
         
         long startTime = 0, endTime = 0, timeElapsed = 0;
         startTime = System.nanoTime();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 2000000; i++) {
             final String searchTerm = generateRandomString();
             stringMatch(searchTerm, documentsByName);
         }
@@ -169,6 +175,10 @@ public class SearchDocument {
 //        System.out.println("Indexed Search took: " + timeElapsed / 1000000 + " ms");
     }
     
+    /**
+     * Generates a random string of random lengths from the letters of the alphabets
+     * @return the generated string
+     */
     private static String generateRandomString() {
         int count = RAND.nextInt(7) + 2;
         final String alphabets = "abcdefghijklmnopqrstuvwxyz";
@@ -176,10 +186,15 @@ public class SearchDocument {
         while (count-- > 1) {
             builder.append(alphabets.charAt(RAND.nextInt(25)));
         }
-        String retVal = builder.toString();
-        return retVal;
+        return builder.toString();
     }
     
+    /**
+     * Performs simple string matching
+     * @param searchTerm the search term
+     * @param documentsByName documents keyed by name
+     * @throws Exception
+     */
     private static Map<String, Integer> stringMatch(final String searchTerm, final Map<String, String> documentsByName) {
         final Map<String, Integer> result = new HashMap<>();
         
@@ -200,7 +215,6 @@ public class SearchDocument {
                 else
                     j = 0;
                 if(j == searchTerm.length()) {
-                    // found a match
                     numberOfMatchings++;
                     j = 0;
                 }
@@ -210,6 +224,12 @@ public class SearchDocument {
         return result;
     }
     
+    /**
+     * Performs Regular Expression string matching
+     * @param searchTerm the search term
+     * @param documentsByName documents keyed by name
+     * @throws Exception
+     */
     private static Map<String, Integer> regexMatch(final String searchTerm, final Map<String, String> documentsByName) {
         final String regex = Pattern.quote(searchTerm); // build a regex from the given search term
         final Map<String, Integer> result = new HashMap<>();
@@ -229,10 +249,14 @@ public class SearchDocument {
         return result;
     }
     
+    /**
+     * Uses Lucene indexing to index the given documents for easier searches
+     * @param searchTerm the search term
+     * @param documentsByName documents keyed by name
+     * @return
+     * @throws Exception
+     */
     private static Map<String, Integer> indexMatch(final String searchTerm, final Map<String, String> documentsByName) throws Exception {
-        LuceneWriteIndexFromFile writeIndex = new LuceneWriteIndexFromFile();
-        writeIndex.createIndex(TEXTS_DIRECTORY, INDEX_DIRECTORY);
-        
         LuceneReadIndexFromFile readIndex = new LuceneReadIndexFromFile();
         final Map<String, Integer> result = readIndex.searchIndex(searchTerm, INDEX_DIRECTORY);
         for (Entry<String, String> entry : documentsByName.entrySet()) {

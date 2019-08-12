@@ -4,7 +4,7 @@
   <artifactId>documents-search</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <properties>
-      <lucene.version>6.6.0</lucene.version>
+      <lucene.version>[7.1.0,)</lucene.version>
   </properties>
   <dependencies>
     	<dependency>
