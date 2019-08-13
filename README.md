@@ -2,7 +2,7 @@
 
 To run this program:
 1. Clone and checkout into a Java IDE such as eclipse or IntelliJ
-2. Build project using maven.
+2. Build project using maven and Java 8.
 3. Right-click on project and select Run As > Java Application
 4. Follow the promptings of the program.
   
