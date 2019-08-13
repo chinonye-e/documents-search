@@ -38,16 +38,19 @@ public class DocumentSearch {
         try {
             Map<String, String> documentsByName = new HashMap<>();
             final String exitSignal = "<exit search>";
+            int searchIterations = 0;
             
             System.out.println("Enter a search term or type <exit search> to exit the program: ");
             String searchTerm = scanner.nextLine();  // Read the search term/phrase
             
             if (searchTerm.equalsIgnoreCase(exitSignal)) {
-                System.out.println("Would you like to run the performance test that executes two million searches? Yes or No");
-                if (scanner.nextLine().equalsIgnoreCase("yes")) 
-                    docSearch.performanceSearch(documentsByName);
-                else
-                    return;
+                System.out.println("Would you like to run the performance test that executes up to two million searches? Yes or No");
+                if (scanner.nextLine().equalsIgnoreCase("yes")) {
+                    System.out.println("Enter the number of searches to execute, capped at two million.");
+                    searchIterations = scanner.nextInt();
+                    docSearch.performanceSearch(documentsByName, searchIterations);
+                }
+                return;
             }
             
             documentsByName = docSearch.readFileAsString();
@@ -79,9 +82,10 @@ public class DocumentSearch {
             
             System.out.println("Would you like to run the performance test that executes two million searches? Yes or No");
             if (scanner.nextLine().equalsIgnoreCase("yes")) {
-                docSearch.performanceSearch(documentsByName);
+                System.out.println("Enter the number of searches to execute, capped at two million.");
+                searchIterations = scanner.nextInt();
+                docSearch.performanceSearch(documentsByName, searchIterations);
             }
-            
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -147,8 +151,8 @@ public class DocumentSearch {
         return sortedResult;
     }
     
-    private void performanceSearch(final Map<String, String> documentsByName) throws Exception {
-        final int iterations = 2000000;
+    private void performanceSearch(final Map<String, String> documentsByName, final int searchIterations) throws Exception {
+        final int iterations = searchIterations > 2000000 ? 2000000 : searchIterations;
         long startTime = 0, endTime = 0, timeElapsed = 0;
         startTime = System.nanoTime();
         for (int i = 0; i < iterations; i++) {
